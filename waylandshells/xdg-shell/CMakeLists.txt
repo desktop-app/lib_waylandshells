@@ -62,3 +62,10 @@ target_link_libraries(lib_waylandshells_xdg_shell
 PRIVATE
     desktop-app::external_qt
 )
+
+if (DESKTOP_APP_USE_PACKAGED)
+    target_link_libraries(lib_waylandshells_xdg_shell
+    PRIVATE
+        wayland-client
+    )
+endif()
