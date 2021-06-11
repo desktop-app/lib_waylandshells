@@ -17,7 +17,7 @@ PRIVATE
     waylandshells/xdg_shell.h
 )
 
-target_include_directories(lib_waylandshells_xdg_shell
+target_include_directories(lib_waylandshells
 PUBLIC
     ${src_loc}
 )
