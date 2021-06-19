@@ -47,16 +47,6 @@ namespace WaylandShells {
 
 using namespace QtWaylandClient;
 
-namespace {
-
-bool InUse = false;
-
-}
-
-bool XdgShell() {
-    return InUse;
-}
-
 class DesktopAppWaylandXdgShellIntegrationPlugin : public QWaylandShellIntegrationPlugin
 {
     Q_OBJECT
@@ -70,7 +60,6 @@ QWaylandShellIntegration *DesktopAppWaylandXdgShellIntegrationPlugin::create(con
 {
     Q_UNUSED(key);
     Q_UNUSED(paramList);
-    InUse = true;
     return new QWaylandXdgShellIntegration();
 }
 
