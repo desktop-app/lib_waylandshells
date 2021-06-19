@@ -49,8 +49,20 @@ namespace WaylandShells {
 
 using namespace QtWaylandClient;
 
+namespace {
+
+bool InUse = false;
+
+}
+
+bool XdgShell() {
+    return InUse;
+}
+
 bool QWaylandXdgShellIntegration::initialize(QWaylandDisplay *display)
 {
+    InUse = false;
+
     for (QWaylandDisplay::RegistryGlobal global : display->globals()) {
         if (global.interface == QLatin1String("xdg_wm_base")) {
             m_xdgShell.reset(new QWaylandXdgShell(display, global.id, global.version));
@@ -63,7 +75,8 @@ bool QWaylandXdgShellIntegration::initialize(QWaylandDisplay *display)
         return false;
     }
 
-    return QWaylandShellIntegration::initialize(display);
+    InUse = QWaylandShellIntegration::initialize(display);
+    return InUse;
 }
 
 QWaylandShellSurface *QWaylandXdgShellIntegration::createShellSurface(QWaylandWindow *window)
