@@ -76,9 +76,7 @@ PRIVATE
 )
 
 if (DESKTOP_APP_USE_PACKAGED)
-    find_package(Wayland COMPONENTS Client REQUIRED)
-    target_link_libraries(lib_waylandshells_xdg_shell
-    PRIVATE
-        Wayland::Client
-    )
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
+    target_link_libraries(lib_waylandshells_xdg_shell PRIVATE PkgConfig::WAYLAND_CLIENT)
 endif()
