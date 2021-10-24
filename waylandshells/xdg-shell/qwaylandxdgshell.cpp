@@ -146,7 +146,7 @@ void QWaylandXdgSurface::Toplevel::xdg_toplevel_configure(int32_t width, int32_t
         case XDG_TOPLEVEL_STATE_FULLSCREEN:
             m_pending.states |= Qt::WindowFullScreen;
             break;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
         case XDG_TOPLEVEL_STATE_TILED_LEFT:
             m_toplevelStates |= QWaylandWindow::WindowTiledLeft;
             break;
