@@ -109,7 +109,7 @@ void QWaylandXdgSurface::Toplevel::applyConfigure()
         if (normalPending && !m_normalSize.isEmpty())
             m_xdgSurface->m_window->resizeFromApplyConfigure(m_normalSize);
     } else {
-        QMargins margins = m_xdgSurface->customMargins();
+        QMargins margins = m_xdgSurface->m_customMargins;
         m_xdgSurface->m_window->resizeFromApplyConfigure(m_pending.size.grownBy(margins));
     }
 
@@ -386,7 +386,7 @@ void QWaylandXdgSurface::propagateSizeHints()
 
 void QWaylandXdgSurface::setWindowGeometry(const QRect &rect)
 {
-    QRect rectWithoutMargins = rect.marginsRemoved(customMargins());
+    QRect rectWithoutMargins = rect.marginsRemoved(m_customMargins);
     set_window_geometry(
         rectWithoutMargins.x(),
         rectWithoutMargins.y(),
@@ -411,14 +411,6 @@ void QWaylandXdgSurface::setSizeHints()
     }
 }
 
-QMargins QWaylandXdgSurface::customMargins() const
-{
-    QVariant propertyValue = m_window->window()->property("_desktopApp_waylandCustomMargins");
-    return propertyValue.isValid()
-        ? qvariant_cast<QMargins>(propertyValue)
-        : QMargins();
-}
-
 void *QWaylandXdgSurface::nativeResource(const QByteArray &resource)
 {
     QByteArray lowerCaseResource = resource.toLower();
@@ -429,6 +421,15 @@ void *QWaylandXdgSurface::nativeResource(const QByteArray &resource)
     else if (lowerCaseResource == "xdg_popup" && m_popup)
         return m_popup->object();
     return nullptr;
+}
+
+void QWaylandXdgSurface::sendProperty(const QString &name, const QVariant &value)
+{
+    if (name == "_desktopApp_waylandCustomMargins") {
+        const QMargins oldCustomMargins = m_customMargins;
+        m_customMargins = qvariant_cast<QMargins>(value);
+        m_window->setGeometry(m_window->geometry().marginsRemoved(oldCustomMargins).marginsAdded(m_customMargins));
+    }
 }
 
 void QWaylandXdgSurface::requestWindowStates(Qt::WindowStates states)

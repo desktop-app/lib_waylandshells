@@ -103,9 +103,10 @@ public:
     void setWindowGeometry(const QRect &rect) override;
 
     void setSizeHints();
-    QMargins customMargins() const;
 
     void *nativeResource(const QByteArray &resource);
+
+    void sendProperty(const QString &name, const QVariant &value) override;
 
 protected:
     void requestWindowStates(Qt::WindowStates states) override;
@@ -167,6 +168,7 @@ private:
     QRegion m_exposeRegion;
     uint m_pendingConfigureSerial = 0;
     uint m_appliedConfigureSerial = 0;
+    QMargins m_customMargins;
 
     friend class QWaylandXdgShell;
 };
