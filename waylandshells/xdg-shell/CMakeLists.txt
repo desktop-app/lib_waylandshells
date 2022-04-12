@@ -22,6 +22,7 @@ if (DESKTOP_APP_QT6)
     FILES
         ${third_party_loc}/wayland-protocols/stable/xdg-shell/xdg-shell.xml
         ${third_party_loc}/wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
+        ${third_party_loc}/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml
     )
 else()
     ecm_add_qtwayland_client_protocol(xdg_shell_protocol_srcs
@@ -33,11 +34,18 @@ else()
         PROTOCOL ${third_party_loc}/wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
         BASENAME xdg-decoration-unstable-v1
     )
+
+    ecm_add_qtwayland_client_protocol(xdg_activation_protocol_srcs
+        PROTOCOL ${third_party_loc}/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml
+        BASENAME xdg-activation-v1
+    )
 endif()
 
 nice_target_sources(lib_waylandshells_xdg_shell ${src_loc}
 PRIVATE
     main.cpp
+    qwaylandxdgactivationv1.cpp
+    qwaylandxdgactivationv1_p.h
     qwaylandxdgdecorationv1.cpp
     qwaylandxdgdecorationv1_p.h
     qwaylandxdgshell.cpp
@@ -51,6 +59,7 @@ if (NOT DESKTOP_APP_QT6)
     PRIVATE
         ${xdg_shell_protocol_srcs}
         ${xdg_decoration_protocol_srcs}
+        ${xdg_activation_protocol_srcs}
     )
 endif()
 

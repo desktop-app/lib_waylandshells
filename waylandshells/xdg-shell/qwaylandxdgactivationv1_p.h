@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2020 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXDGSHELLINTEGRATION_P_H
-#define QWAYLANDXDGSHELLINTEGRATION_P_H
+#ifndef QWAYLANDXDGACTIVATIONV1_P_H
+#define QWAYLANDXDGACTIVATIONV1_P_H
 
 //
 //  W A R N I N G
@@ -51,33 +51,49 @@
 // We mean it.
 //
 
-#include "qwaylandxdgshell_p.h"
+#include <QObject>
+#include "qwayland-xdg-activation-v1.h"
 
-#include <QtWaylandClient/private/qwaylandshellintegration_p.h>
+#include <QtWaylandClient/qtwaylandclientglobal.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace QtWaylandClient {
+
+class QWaylandDisplay;
+class QWaylandSurface;
+
+}
 
 namespace WaylandShells {
 
 using namespace QtWaylandClient;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgShellIntegration : public QWaylandShellIntegration
+class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgActivationTokenV1
+    : public QObject,
+      public QtWayland::xdg_activation_token_v1
 {
+    Q_OBJECT
 public:
-    QWaylandXdgShellIntegration() {}
-    bool initialize(QWaylandDisplay *display) override;
-    QWaylandShellSurface *createShellSurface(QWaylandWindow *window) override;
-#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
-    void handleKeyboardFocusChanged(QWaylandWindow *newFocus, QWaylandWindow *oldFocus) override;
-#endif
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
+    void xdg_activation_token_v1_done(const QString &token) override { Q_EMIT done(token); }
 
-private:
-    QScopedPointer<QWaylandXdgShell> m_xdgShell;
+Q_SIGNALS:
+    void done(const QString &token);
 };
 
-}
+class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgActivationV1 : public QtWayland::xdg_activation_v1
+{
+public:
+    QWaylandXdgActivationV1(struct ::wl_registry *registry, uint32_t id, uint32_t availableVersion);
+    ~QWaylandXdgActivationV1() override;
+
+    QWaylandXdgActivationTokenV1 *requestXdgActivationToken(QWaylandDisplay *display,
+                                                            struct ::wl_surface *surface,
+                                                            uint32_t serial, const QString &app_id);
+};
 
 QT_END_NAMESPACE
 
-#endif // QWAYLANDXDGSHELLINTEGRATION_P_H
+}
+
+#endif // QWAYLANDXDGACTIVATIONV1_P_H

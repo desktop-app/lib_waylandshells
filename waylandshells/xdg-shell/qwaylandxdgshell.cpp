@@ -71,11 +71,6 @@ QWaylandXdgSurface::Toplevel::Toplevel(QWaylandXdgSurface *xdgSurface)
 
 QWaylandXdgSurface::Toplevel::~Toplevel()
 {
-    if (m_applied.states & Qt::WindowActive) {
-        QWaylandWindow *window = m_xdgSurface->window();
-        window->display()->handleWindowDeactivated(window);
-    }
-
     // The protocol spec requires that the decoration object is deleted before xdg_toplevel.
     delete m_decoration;
     m_decoration = nullptr;
@@ -89,19 +84,26 @@ void QWaylandXdgSurface::Toplevel::applyConfigure()
     if (!(m_applied.states & (Qt::WindowMaximized|Qt::WindowFullScreen)))
         m_normalSize = m_xdgSurface->m_window->windowFrameGeometry().size();
 
-    if ((m_pending.states & Qt::WindowActive) && !(m_applied.states & Qt::WindowActive))
+    if ((m_pending.states & Qt::WindowActive) && !(m_applied.states & Qt::WindowActive)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+        && !m_xdgSurface->m_window->display()->isKeyboardAvailable())
+#else
+        )
+#endif
         m_xdgSurface->m_window->display()->handleWindowActivated(m_xdgSurface->m_window);
 
-    if (!(m_pending.states & Qt::WindowActive) && (m_applied.states & Qt::WindowActive))
+    if (!(m_pending.states & Qt::WindowActive) && (m_applied.states & Qt::WindowActive)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+        && !m_xdgSurface->m_window->display()->isKeyboardAvailable())
+#else
+        )
+#endif
         m_xdgSurface->m_window->display()->handleWindowDeactivated(m_xdgSurface->m_window);
-
-    // TODO: none of the other plugins send WindowActive either, but is it on purpose?
-    Qt::WindowStates statesWithoutActive = m_pending.states & ~Qt::WindowActive;
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
     m_xdgSurface->m_window->handleToplevelWindowTilingStatesChanged(m_toplevelStates);
 #endif
-    m_xdgSurface->m_window->handleWindowStatesChanged(statesWithoutActive);
+    m_xdgSurface->m_window->handleWindowStatesChanged(m_pending.states);
 
     if (m_pending.size.isEmpty()) {
         // An empty size in the configure means it's up to the client to choose the size
@@ -275,7 +277,7 @@ QWaylandXdgSurface::QWaylandXdgSurface(QWaylandXdgShell *shell, ::xdg_surface *s
     } else {
         setToplevel();
         if (transientParent) {
-            auto parentXdgSurface = static_cast<QWaylandXdgSurface *>(transientParent->shellSurface());
+            auto parentXdgSurface = qobject_cast<QWaylandXdgSurface *>(transientParent->shellSurface());
             if (parentXdgSurface)
                 m_toplevel->set_parent(parentXdgSurface->m_toplevel->object());
         }
@@ -335,6 +337,8 @@ void QWaylandXdgSurface::setAppId(const QString &appId)
 {
     if (m_toplevel)
         m_toplevel->set_app_id(appId);
+
+    m_appId = appId;
 }
 
 void QWaylandXdgSurface::setWindowFlags(Qt::WindowFlags flags)
@@ -512,6 +516,41 @@ void QWaylandXdgSurface::xdg_surface_configure(uint32_t serial)
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+bool QWaylandXdgSurface::requestActivate()
+{
+    if (auto *activation = m_shell->activation()) {
+        activation->activate(m_activationToken, window()->wlSurface());
+        return true;
+    }
+    return false;
+}
+
+void QWaylandXdgSurface::requestXdgActivationToken(quint32 serial)
+{
+    if (auto *activation = m_shell->activation()) {
+        auto tokenProvider = activation->requestXdgActivationToken(
+                m_shell->m_display, m_window->wlSurface(), serial, m_appId);
+        connect(tokenProvider, &QWaylandXdgActivationTokenV1::done, this,
+                [this, tokenProvider](const QString &token) {
+                    Q_EMIT m_window->xdgActivationTokenCreated(token);
+                    tokenProvider->deleteLater();
+                });
+    } else {
+        QWaylandShellSurface::requestXdgActivationToken(serial);
+    }
+}
+
+void QWaylandXdgSurface::setXdgActivationToken(const QString &token)
+{
+    if (m_shell->activation()) {
+        m_activationToken = token;
+    } else {
+        qCWarning(lcQpaWayland) << "zxdg_activation_v1 not available";
+    }
+}
+#endif
+
 QWaylandXdgShell::QWaylandXdgShell(QWaylandDisplay *display, uint32_t id, uint32_t availableVersion)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
     : QtWayland::xdg_wm_base(display->wl_registry(), id, qMin(availableVersion, 2u))
@@ -545,6 +584,10 @@ void QWaylandXdgShell::handleRegistryGlobal(void *data, wl_registry *registry, u
     QWaylandXdgShell *xdgShell = static_cast<QWaylandXdgShell *>(data);
     if (interface == QLatin1String(QWaylandXdgDecorationManagerV1::interface()->name))
         xdgShell->m_xdgDecorationManager.reset(new QWaylandXdgDecorationManagerV1(registry, id, version));
+
+    if (interface == QLatin1String(QWaylandXdgActivationV1::interface()->name)) {
+        xdgShell->m_xdgActivation.reset(new QWaylandXdgActivationV1(registry, id, version));
+    }
 }
 
 }
