@@ -75,7 +75,11 @@ bool QWaylandXdgShellIntegration::initialize(QWaylandDisplay *display)
         return false;
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+    InUse = true;
+#else
     InUse = QWaylandShellIntegration::initialize(display);
+#endif
     return InUse;
 }
 
@@ -84,6 +88,7 @@ QWaylandShellSurface *QWaylandXdgShellIntegration::createShellSurface(QWaylandWi
     return m_xdgShell->getXdgSurface(window);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
 void QWaylandXdgShellIntegration::handleKeyboardFocusChanged(QWaylandWindow *newFocus, QWaylandWindow *oldFocus)
 {
     if (newFocus) {
@@ -97,6 +102,7 @@ void QWaylandXdgShellIntegration::handleKeyboardFocusChanged(QWaylandWindow *new
             m_display->handleWindowDeactivated(oldFocus);
     }
 }
+#endif
 
 void *QWaylandXdgShellIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {

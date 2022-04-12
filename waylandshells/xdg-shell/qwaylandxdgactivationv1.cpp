@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2020 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,23 +37,9 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXDGSHELLINTEGRATION_P_H
-#define QWAYLANDXDGSHELLINTEGRATION_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qwaylandxdgshell_p.h"
-
-#include <QtWaylandClient/private/qwaylandshellintegration_p.h>
+#include "qwaylandxdgactivationv1_p.h"
+#include <QtWaylandClient/private/qwaylanddisplay_p.h>
+#include <QtWaylandClient/private/qwaylandinputdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,23 +47,39 @@ namespace WaylandShells {
 
 using namespace QtWaylandClient;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgShellIntegration : public QWaylandShellIntegration
+QWaylandXdgActivationV1::QWaylandXdgActivationV1(wl_registry *registry, uint32_t id,
+                                                 uint32_t availableVersion)
+    : QtWayland::xdg_activation_v1(registry, id, qMin(availableVersion, 1u))
 {
-public:
-    QWaylandXdgShellIntegration() {}
-    bool initialize(QWaylandDisplay *display) override;
-    QWaylandShellSurface *createShellSurface(QWaylandWindow *window) override;
-#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
-    void handleKeyboardFocusChanged(QWaylandWindow *newFocus, QWaylandWindow *oldFocus) override;
-#endif
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
+}
 
-private:
-    QScopedPointer<QWaylandXdgShell> m_xdgShell;
-};
+QWaylandXdgActivationV1::~QWaylandXdgActivationV1()
+{
+    Q_ASSERT(isInitialized());
+    destroy();
+}
+
+QWaylandXdgActivationTokenV1 *
+QWaylandXdgActivationV1::requestXdgActivationToken(QWaylandDisplay *display,
+                                                   struct ::wl_surface *surface, uint32_t serial,
+                                                   const QString &app_id)
+{
+    auto wl = get_activation_token();
+    auto provider = new QWaylandXdgActivationTokenV1;
+    provider->init(wl);
+
+    if (surface)
+        provider->set_surface(surface);
+
+    if (!app_id.isEmpty())
+        provider->set_app_id(app_id);
+
+    if (display->lastInputDevice())
+        provider->set_serial(serial, display->lastInputDevice()->wl_seat());
+    provider->commit();
+    return provider;
+}
 
 }
 
 QT_END_NAMESPACE
-
-#endif // QWAYLANDXDGSHELLINTEGRATION_P_H
