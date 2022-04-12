@@ -20,17 +20,17 @@ set_target_properties(lib_waylandshells_xdg_shell PROPERTIES AUTOMOC ON)
 if (DESKTOP_APP_QT6)
     qt6_generate_wayland_protocol_client_sources(lib_waylandshells_xdg_shell
     FILES
-        ${src_loc}/xdg-shell.xml
-        ${src_loc}/xdg-decoration-unstable-v1.xml
+        ${third_party_loc}/wayland-protocols/stable/xdg-shell/xdg-shell.xml
+        ${third_party_loc}/wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
     )
 else()
     ecm_add_qtwayland_client_protocol(xdg_shell_protocol_srcs
-        PROTOCOL ${src_loc}/xdg-shell.xml
+        PROTOCOL ${third_party_loc}/wayland-protocols/stable/xdg-shell/xdg-shell.xml
         BASENAME xdg-shell
     )
 
     ecm_add_qtwayland_client_protocol(xdg_decoration_protocol_srcs
-        PROTOCOL ${src_loc}/xdg-decoration-unstable-v1.xml
+        PROTOCOL ${third_party_loc}/wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
         BASENAME xdg-decoration-unstable-v1
     )
 endif()
