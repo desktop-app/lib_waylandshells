@@ -40,8 +40,11 @@
 #include "qwaylandxdgshellintegration_p.h"
 #include "qwaylandxdgdecorationv1_p.h"
 
+#include <QtWaylandClient/private/qwaylandintegration_p.h>
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
+
+#include <QtGui/private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,6 +59,11 @@ bool InUse = false;
 }
 
 bool XdgShell() {
+	// initialize shell integration before querying
+	if (const auto integration = static_cast<QWaylandIntegration*>(
+		QGuiApplicationPrivate::platformIntegration())) {
+		integration->shellIntegration();
+	}
     return InUse;
 }
 
