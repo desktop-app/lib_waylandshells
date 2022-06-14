@@ -69,7 +69,7 @@ namespace WaylandShells {
 
 using namespace QtWaylandClient;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgActivationTokenV1
+class QWaylandXdgActivationTokenV1
     : public QObject,
       public QtWayland::xdg_activation_token_v1
 {
@@ -81,7 +81,7 @@ Q_SIGNALS:
     void done(const QString &token);
 };
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgActivationV1 : public QtWayland::xdg_activation_v1
+class QWaylandXdgActivationV1 : public QtWayland::xdg_activation_v1
 {
 public:
     QWaylandXdgActivationV1(struct ::wl_registry *registry, uint32_t id, uint32_t availableVersion);
