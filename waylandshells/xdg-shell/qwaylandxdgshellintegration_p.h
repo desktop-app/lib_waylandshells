@@ -61,7 +61,7 @@ namespace WaylandShells {
 
 using namespace QtWaylandClient;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgShellIntegration : public QWaylandShellIntegration
+class QWaylandXdgShellIntegration : public QWaylandShellIntegration
 {
 public:
     QWaylandXdgShellIntegration() {}

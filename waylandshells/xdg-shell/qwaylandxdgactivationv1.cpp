@@ -83,3 +83,5 @@ QWaylandXdgActivationV1::requestXdgActivationToken(QWaylandDisplay *display,
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qwaylandxdgactivationv1_p.cpp"

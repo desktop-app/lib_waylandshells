@@ -81,7 +81,7 @@ using namespace QtWaylandClient;
 
 class QWaylandXdgShell;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgSurface : public QWaylandShellSurface, public QtWayland::xdg_surface
+class QWaylandXdgSurface : public QWaylandShellSurface, public QtWayland::xdg_surface
 {
     Q_OBJECT
 public:
@@ -181,7 +181,7 @@ private:
     friend class QWaylandXdgShell;
 };
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgShell : public QtWayland::xdg_wm_base
+class QWaylandXdgShell : public QtWayland::xdg_wm_base
 {
 public:
     QWaylandXdgShell(QWaylandDisplay *display, uint32_t id, uint32_t availableVersion);
