@@ -14,12 +14,24 @@ set_target_properties(lib_waylandshells_xdg_shell PROPERTIES AUTOMOC ON)
 if (DESKTOP_APP_QT6)
     qt6_generate_wayland_protocol_client_sources(lib_waylandshells_xdg_shell
     FILES
-        ${third_party_loc}/wayland-protocols/stable/xdg-shell/xdg-shell.xml
-        ${third_party_loc}/wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
-        ${third_party_loc}/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml
+        ${WaylandProtocols_DATADIR}/stable/xdg-shell/xdg-shell.xml
+        ${WaylandProtocols_DATADIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
+        ${WaylandProtocols_DATADIR}/staging/xdg-activation/xdg-activation-v1.xml
     )
 else()
-    message(FATAL_ERROR "This piece of cmake code is not ported to Qt 5")
+    ecm_add_qtwayland_client_protocol(lib_waylandshells_xdg_shell
+        PROTOCOL ${WaylandProtocols_DATADIR}/stable/xdg-shell/xdg-shell.xml
+        BASENAME xdg-shell
+    )
+    ecm_add_qtwayland_client_protocol(lib_waylandshells_xdg_shell
+        PROTOCOL ${WaylandProtocols_DATADIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
+        BASENAME xdg-decoration-unstable-v1
+    )
+    ecm_add_qtwayland_client_protocol(lib_waylandshells_xdg_shell
+        PROTOCOL ${WaylandProtocols_DATADIR}/staging/xdg-activation/xdg-activation-v1.xml
+        BASENAME xdg-activation-v1
+    )
+    target_include_directories(lib_waylandshells_xdg_shell PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 nice_target_sources(lib_waylandshells_xdg_shell ${src_loc}
