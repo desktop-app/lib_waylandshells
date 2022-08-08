@@ -276,6 +276,7 @@ QWaylandXdgSurface::QWaylandXdgSurface(QWaylandXdgShell *shell, ::xdg_surface *s
     , xdg_surface(surface)
     , m_shell(shell)
     , m_window(window)
+    , m_customMargins(qvariant_cast<QMargins>(window->property("_desktopApp_waylandCustomMargins")))
 {
     QWaylandDisplay *display = window->display();
     Qt::WindowType type = window->window()->type();
