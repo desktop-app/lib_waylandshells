@@ -470,16 +470,19 @@ void QWaylandXdgSurface::setPopup(QWaylandWindow *parent)
 
     auto positioner = new QtWayland::xdg_positioner(m_shell->create_positioner());
     // set_popup expects a position relative to the parent
-    QPoint transientPos = m_window->geometry().topLeft(); // this is absolute
-    transientPos -= parent->geometry().topLeft();
+    QPoint topLeftMargins = QPoint(m_customMargins.left(), m_customMargins.top());
+    QPoint parentMargins = QPoint(parentXdgSurface->m_customMargins.left(), parentXdgSurface->m_customMargins.top());
+    QPoint transientPos = m_window->geometry().topLeft() + topLeftMargins; // this is absolute
+    transientPos -= parent->geometry().topLeft() + parentMargins;
     if (parent->decoration()) {
         transientPos.setX(transientPos.x() + parent->decoration()->margins().left());
         transientPos.setY(transientPos.y() + parent->decoration()->margins().top());
     }
+    QSize size = m_window->windowContentGeometry().size().shrunkBy(m_customMargins);
     positioner->set_anchor_rect(transientPos.x(), transientPos.y(), 1, 1);
     positioner->set_anchor(QtWayland::xdg_positioner::anchor_top_left);
     positioner->set_gravity(QtWayland::xdg_positioner::gravity_bottom_right);
-    positioner->set_size(m_window->geometry().width(), m_window->geometry().height());
+    positioner->set_size(size.width(), size.height());
     positioner->set_constraint_adjustment(QtWayland::xdg_positioner::constraint_adjustment_slide_x
         | QtWayland::xdg_positioner::constraint_adjustment_slide_y
         | QtWayland::xdg_positioner::constraint_adjustment_flip_x
