@@ -13,9 +13,9 @@ set_target_properties(lib_waylandshells_xdg_shell PROPERTIES AUTOMOC ON)
 
 qt_generate_wayland_protocol_client_sources(lib_waylandshells_xdg_shell
 FILES
-    ${third_party_loc}/wayland-protocols/stable/xdg-shell/xdg-shell.xml
-    ${third_party_loc}/wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
-    ${third_party_loc}/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml
+    ${WaylandProtocols_DATADIR}/stable/xdg-shell/xdg-shell.xml
+    ${WaylandProtocols_DATADIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
+    ${WaylandProtocols_DATADIR}/staging/xdg-activation/xdg-activation-v1.xml
 )
 
 nice_target_sources(lib_waylandshells_xdg_shell ${src_loc}
